@@ -23,7 +23,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "minitest", "~> 5"
   spec.add_development_dependency "m"
   spec.add_development_dependency "sqlite3"
-  spec.add_development_dependency "byebug"
   spec.add_development_dependency "timecop"
   spec.add_development_dependency "database_cleaner"
 end

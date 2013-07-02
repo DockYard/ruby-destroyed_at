@@ -2,7 +2,7 @@ require 'bundler/setup'
 require 'destroyed_at'
 require 'minitest/autorun'
 require 'active_record'
-require 'byebug'
+require 'byebug' if RUBY_VERSION >= '2.0'
 require 'timecop'
 require 'database_cleaner'
 

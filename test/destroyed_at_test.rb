@@ -116,4 +116,30 @@ describe 'Destroying AR models' do
     User.unscoped.first.restore
     Dinner.count.must_equal 3
   end
+
+  it 'should have the same destroy time for all dependent records' do
+    user = User.create
+    5.times do
+      Dinner.create user: user
+    end
+    Dinner.before_destroy do
+      sleep 1
+    end
+    user.destroy
+    Dinner.unscoped.where(destroyed_at: user.destroyed_at).count.must_equal 5
+  end
+
+  it 'only restores records destroyed at the same time' do
+    user = User.create
+    5.times do
+      Dinner.create user: user
+    end
+    Dinner.first.destroy
+    Dinner.count.must_equal 4
+    sleep 1
+    user.destroy
+    Dinner.count.must_equal 0
+    user.restore
+    Dinner.count.must_equal 4
+  end
 end

@@ -81,6 +81,15 @@ describe 'destroying an activerecord instance' do
     Author.count.must_equal 0
     Avatar.count.must_equal 1
   end
+
+  it 'destroys a has_one child correctly with dependent destroy' do
+    avatar = Avatar.create
+    commenter = Commenter.create(avatar: avatar)
+    commenter.destroy!
+
+    Commenter.count.must_equal 0
+    Avatar.count.must_equal 0
+  end
 end
 
 describe 'restoring an activerecord instance' do

@@ -28,7 +28,7 @@ ActiveRecord::Base.establish_connection(
 DatabaseCleaner.strategy = :truncation
 
 ActiveRecord::Base.connection.execute(%{CREATE TABLE authors (id INTEGER PRIMARY KEY);})
-ActiveRecord::Base.connection.execute(%{CREATE TABLE avatars (id INTEGER PRIMARY KEY, author_id INTEGER, destroyed_at DATETIME);})
+ActiveRecord::Base.connection.execute(%{CREATE TABLE avatars (id INTEGER PRIMARY KEY, author_id INTEGER, commenter_id INTEGER, destroyed_at DATETIME);})
 ActiveRecord::Base.connection.execute(%{CREATE TABLE categories (id INTEGER PRIMARY KEY);})
 ActiveRecord::Base.connection.execute(%{CREATE TABLE categorizations (id INTEGER PRIMARY KEY, category_id INTEGER, post_id INTEGER);})
 ActiveRecord::Base.connection.execute(%{CREATE TABLE comments (id INTEGER PRIMARY KEY, commenter_id INTEGER, post_id INTEGER, destroyed_at DATETIME);})
@@ -44,6 +44,7 @@ end
 class Avatar < ActiveRecord::Base
   include DestroyedAt
   belongs_to :author
+  belongs_to :commenter
 end
 
 class Category < ActiveRecord::Base
@@ -66,6 +67,7 @@ class Commenter < ActiveRecord::Base
   include DestroyedAt
   has_many :comments, dependent: :destroy
   has_many :posts, through: :comments
+  has_one :avatar, dependent: :destroy
 end
 
 class Post < ActiveRecord::Base

@@ -65,6 +65,28 @@ class PetType < ActiveRecord::Base
 
     raise ActiveRecord::Rollback # halt the callback chain
   end
+
+  # Observe the transaction state callbacks
+  def reset_transaction_state_callback_observers
+    @after_commit_called = false
+    @after_rollback_called = false
+  end
+
+  after_commit do
+    @after_commit_called = true
+  end
+
+  def after_commit_called?
+    !!@after_commit_called
+  end
+
+  after_rollback do
+    @after_rollback_called = true
+  end
+
+  def after_rollback_called?
+    !!@after_rollback_called
+  end
 end
 
 class Avatar < ActiveRecord::Base

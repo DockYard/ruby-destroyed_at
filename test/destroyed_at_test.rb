@@ -108,6 +108,41 @@ describe 'destroying an activerecord instance' do
     Pet.count.must_equal 1
     PetType.count.must_equal 1
   end
+
+  it 'runs the after_commit callbacks when successful' do
+    pet_type = PetType.create(name: 'Cat')
+    
+    Pet.count.must_equal 0
+    PetType.count.must_equal 1
+
+    pet_type.reset_transaction_state_callback_observers
+
+    pet_type.after_commit_called?.must_equal false
+    pet_type.after_rollback_called?.must_equal false
+
+    pet_type.destroy
+    
+    pet_type.after_commit_called?.must_equal true
+    pet_type.after_rollback_called?.must_equal false
+  end
+
+  it 'runs the after_rollback callbacks when failed' do
+    pet_type = PetType.create(name: 'Cat')
+    pet = Pet.create(pet_type: pet_type)
+
+    Pet.count.must_equal 1
+    PetType.count.must_equal 1
+
+    pet_type.reset_transaction_state_callback_observers
+
+    pet_type.after_commit_called?.must_equal false
+    pet_type.after_rollback_called?.must_equal false
+
+    pet_type.destroy
+    
+    pet_type.after_commit_called?.must_equal false
+    pet_type.after_rollback_called?.must_equal true
+  end
 end
 
 describe 'restoring an activerecord instance' do

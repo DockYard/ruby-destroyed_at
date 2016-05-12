@@ -2,6 +2,7 @@ require 'destroyed_at/version'
 require 'destroyed_at/belongs_to_association'
 require 'destroyed_at/has_many_association'
 require 'destroyed_at/has_one_association'
+require 'destroyed_at/record_not_restored'
 require 'destroyed_at/mapper'
 
 module DestroyedAt
@@ -39,12 +40,14 @@ module DestroyedAt
 
   # Set an object's destroyed_at time.
   def destroy(timestamp = nil)
-    timestamp ||= @marked_for_destruction_at || current_time_from_proper_timezone
-    raw_write_attribute(:destroyed_at, timestamp)
-    run_callbacks(:destroy) do
-      destroy_associations
-      self.class.unscoped.where(self.class.primary_key => id).update_all(destroyed_at: timestamp)
-      @destroyed = true
+    with_transaction_returning_status do
+      timestamp ||= @marked_for_destruction_at || current_time_from_proper_timezone
+      raw_write_attribute(:destroyed_at, timestamp)
+      run_callbacks(:destroy) do
+        destroy_associations
+        self.class.unscoped.where(self.class.primary_key => id).update_all(destroyed_at: timestamp)
+        @destroyed = true
+      end
     end
   end
 
@@ -56,16 +59,22 @@ module DestroyedAt
 
   # Set an object's destroyed_at time to nil.
   def restore
-    state = nil
-    run_callbacks(:restore) do
-      if state = (self.class.unscoped.where(self.class.primary_key => id).update_all(destroyed_at: nil) == 1)
-        _restore_associations
-        raw_write_attribute(:destroyed_at, nil)
-        @destroyed = false
-        true
+    with_transaction_returning_status do
+      state = nil
+      run_callbacks(:restore) do
+        if state = (self.class.unscoped.where(self.class.primary_key => id).update_all(destroyed_at: nil) == 1)
+          _restore_associations
+          raw_write_attribute(:destroyed_at, nil)
+          @destroyed = false
+          true
+        end
       end
+      state
     end
-    state
+  end
+
+  def restore!
+    restore || raise(RecordNotRestored, self)
   end
 
   def persisted?

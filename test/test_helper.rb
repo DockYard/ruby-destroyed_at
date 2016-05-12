@@ -37,7 +37,8 @@ ActiveRecord::Base.connection.execute(%{CREATE TABLE destructive_children (id IN
 ActiveRecord::Base.connection.execute(%{CREATE TABLE images (id INTEGER PRIMARY KEY, post_id INTEGER);})
 ActiveRecord::Base.connection.execute(%{CREATE TABLE posts (id INTEGER PRIMARY KEY, author_id INTEGER, destroyed_at DATETIME);})
 ActiveRecord::Base.connection.execute(%{CREATE TABLE people (id INTEGER PRIMARY KEY);})
-ActiveRecord::Base.connection.execute(%{CREATE TABLE pets (id INTEGER PRIMARY KEY, person_id INTEGER);})
+ActiveRecord::Base.connection.execute(%{CREATE TABLE pet_types (id INTEGER PRIMARY KEY, name TEXT, destroyed_at DATETIME);})
+ActiveRecord::Base.connection.execute(%{CREATE TABLE pets (id INTEGER PRIMARY KEY, person_id INTEGER, pet_type_id INTEGER);})
 ActiveRecord::Base.connection.execute(%{CREATE TABLE likes (id INTEGER PRIMARY KEY, likeable_id INTEGER, likeable_type TEXT, destroyed_at DATETIME);})
 
 class Author < ActiveRecord::Base
@@ -52,6 +53,18 @@ end
 
 class Pet < ActiveRecord::Base
   belongs_to :person
+  belongs_to :pet_type
+end
+
+class PetType < ActiveRecord::Base
+  include DestroyedAt
+  has_many :pets, dependent: :restrict_with_error
+
+  after_restore do
+    Pet.create!(pet_type: self) # mutate the database
+
+    raise ActiveRecord::Rollback # halt the callback chain
+  end
 end
 
 class Avatar < ActiveRecord::Base

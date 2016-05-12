@@ -96,6 +96,53 @@ describe 'destroying an activerecord instance' do
     comment.destroyed_at.must_equal datetime
   end
 
+  it 'rollsback the transaction when destroying fails' do
+    pet_type = PetType.create(name: 'Cat')
+    pet = Pet.create(pet_type: pet_type)
+
+    Pet.count.must_equal 1
+    PetType.count.must_equal 1
+
+    pet_type.destroy
+
+    Pet.count.must_equal 1
+    PetType.count.must_equal 1
+  end
+
+  it 'runs the after_commit callbacks when successful' do
+    pet_type = PetType.create(name: 'Cat')
+    
+    Pet.count.must_equal 0
+    PetType.count.must_equal 1
+
+    pet_type.reset_transaction_state_callback_observers
+
+    pet_type.after_commit_called?.must_equal false
+    pet_type.after_rollback_called?.must_equal false
+
+    pet_type.destroy
+    
+    pet_type.after_commit_called?.must_equal true
+    pet_type.after_rollback_called?.must_equal false
+  end
+
+  it 'runs the after_rollback callbacks when failed' do
+    pet_type = PetType.create(name: 'Cat')
+    pet = Pet.create(pet_type: pet_type)
+
+    Pet.count.must_equal 1
+    PetType.count.must_equal 1
+
+    pet_type.reset_transaction_state_callback_observers
+
+    pet_type.after_commit_called?.must_equal false
+    pet_type.after_rollback_called?.must_equal false
+
+    pet_type.destroy
+    
+    pet_type.after_commit_called?.must_equal false
+    pet_type.after_rollback_called?.must_equal true
+  end
 end
 
 describe 'restoring an activerecord instance' do
@@ -191,6 +238,30 @@ describe 'restoring an activerecord instance' do
     post.restore
     post.comments.wont_include comment_1
     post.comments.must_include comment_2
+  end
+
+  it 'rollsback the transaction when restoring fails' do
+    pet_type = PetType.create(name: 'Cat')
+    
+    PetType.count.must_equal 1
+    pet_type.destroy
+
+    Pet.count.must_equal 0
+    PetType.count.must_equal 0
+    pet_type.restore
+
+    Pet.count.must_equal 0
+    PetType.count.must_equal 0
+  end
+
+  it 'raises DestroyedAt::RecordNotRestored if the record cannot be restored using #restore!' do
+    pet_type = PetType.create(name: 'Cat')
+    
+    PetType.count.must_equal 1
+    pet_type.destroy
+
+    PetType.count.must_equal 0
+    assert_raises(DestroyedAt::RecordNotRestored) { pet_type.restore! }
   end
 end
 

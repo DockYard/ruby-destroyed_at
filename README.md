@@ -1,12 +1,12 @@
 # DestroyedAt #
 
-[![Build Status](https://travis-ci.org/DockYard/ruby-destroyed_at.svg?branch=master)](http://travis-ci.org/dockyard/ruby-destroyed_at)
+[![Build Status](https://travis-ci.org/DockYard/ruby-destroyed_at.svg?branch=master)](http://travis-ci.org/DockYard/ruby-destroyed_at)
 [![Dependency Status](https://gemnasium.com/dockyard/ruby-destroyed_at.png?travis)](https://gemnasium.com/dockyard/ruby-destroyed_at)
 [![Code Climate](https://codeclimate.com/github/dockyard/ruby-destroyed_at/badges/gpa.svg)](https://codeclimate.com/github/dockyard/ruby-destroyed_at)
 
 ## Looking for help? ##
 
-If it is a bug [please open an issue on GitHub](https://github.com/dockyard/destroyed_at/issues).
+If it is a bug [please open an issue on GitHub](https://github.com/DockYard/ruby-destroyed_at/issues).
 
 ## Installation ##
 

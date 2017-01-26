@@ -27,6 +27,22 @@ describe 'destroying an activerecord instance' do
     post.destroyed?.must_equal false
   end
 
+  # Failing test
+  it 'sets #destroyed? after a reload' do
+    post.destroyed?.must_equal false
+    Post.where(id: post.id).destroy_all
+    post.reload.destroyed?.must_equal true
+  end
+
+  # Passing test
+  it 'sets #destroyed? after a reload (passing)' do
+    post.destroyed?.must_equal false
+    Post.where(id: post.id).destroy_all
+    post_id = post.id
+    post = Post.unscope(where: :destroyed_at).find(post_id)
+    post.reload.destroyed?.must_equal true
+  end
+
   it 'runs destroy callbacks' do
     post.destroy_callback_count.must_equal nil
     post.destroy

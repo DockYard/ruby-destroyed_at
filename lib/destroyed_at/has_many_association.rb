@@ -9,7 +9,8 @@ module DestroyedAt
             r.destroy
           end
         end
-        update_counter(-records.length) unless inverse_updates_counter_cache?
+        iucc = ActiveRecord::VERSION::MAJOR >= 5 ? reflection.inverse_updates_counter_cache? : inverse_updates_counter_cache?
+        update_counter(-records.length) unless iucc
       else
         super
       end

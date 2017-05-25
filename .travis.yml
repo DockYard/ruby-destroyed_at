@@ -1,9 +1,18 @@
 rvm:
-- 2.0.0
 - 2.1.0
+- 2.2.2
 
 before_install:
 - gem install bundler -v '= 1.5.1'
+
+gemfile:
+- gemfiles/Gemfile.4.2
+- gemfiles/Gemfile.5.0
+
+matrix:
+  exclude:
+    - rvm: 2.1.0
+      gemfile: gemfiles/Gemfile.5.0
 
 notifications:
   hipchat:

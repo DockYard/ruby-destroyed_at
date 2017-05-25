@@ -30,7 +30,8 @@ module DestroyedAt
   module ClassMethods
     def destroyed(time = nil)
       query = where.not(destroyed_at: nil)
-      query.where_values.reject! do |node|
+      values = query.respond_to?(:where_clause) ? query.where_clause.send(:predicates) : query.where_values
+      values.reject! do |node|
         Arel::Nodes::Equality === node && node.left.name == 'destroyed_at' && node.right.nil?
       end
       time ? query.where(destroyed_at: time) : query.where.not(destroyed_at: nil)
